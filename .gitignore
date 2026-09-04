@@ -1,0 +1,7 @@
+# dotenv files
+.env
+
+# Build results
+[Dd]ebug/
+[Bb]in/
+[Oo]bj/
