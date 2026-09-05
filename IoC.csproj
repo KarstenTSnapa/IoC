@@ -4,6 +4,16 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>IoC.AutoDI</PackageId>
+    <Version>10.0.0</Version>
+    <Authors>Karsten Snapa</Authors>
+    <Description>
+      Automatic DI when you implement class or interface with the appropriate marker interfaces.
+    </Description>
+    <PackageTags>dependency-injection;di;ioc</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/KarstenTSnapa/IoC</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

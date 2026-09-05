@@ -1,8 +1,7 @@
 using System.Reflection;
-using AutoDI;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AutoDi;
+namespace IoC.AutoDI;
 
 public static class Registrator
 {
@@ -10,32 +9,50 @@ public static class Registrator
         this IServiceCollection services
     )
     {
-        var assembly = Assembly.GetEntryAssembly();
+        var entryAssembly = Assembly.GetEntryAssembly();
 
-        if (assembly is null)
+        if (entryAssembly is null)
         {
             return services;
         }
-        return services.AddAutoDiRegistration(assembly);
+        return services.Register(entryAssembly);
     }
 
     public static IServiceCollection AddAutoDiRegistration(
         this IServiceCollection services,
+        params Type[] assemblyMarkerTypes
+    )
+    {
+        var assemblies = assemblyMarkerTypes
+            .Select(assemblyMarkerType => assemblyMarkerType.Assembly)
+            .Distinct()
+            .ToArray();
+
+        return services.Register(assemblies);
+    }
+
+    private static IServiceCollection Register(
+        this IServiceCollection services,
         params Assembly[] assemblies
     )
     {
-        var types = assemblies
+        var concreteClasses = assemblies
             .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.IsClass && !type.IsAbstract);
+            .Where(candidateType => candidateType.IsClass && !candidateType.IsAbstract);
 
-        foreach (var type in types)
+        var interfaceOwners = new Dictionary<Type, Type>();
+
+        foreach (var concreteClass in concreteClasses)
         {
-            if (typeof(IScoped).IsAssignableFrom(type))
-                services.AddScoped(type);
-            else if (typeof(ISingleton).IsAssignableFrom(type))
-                services.AddSingleton(type);
-            else if (typeof(ITransient).IsAssignableFrom(type))
-                services.AddTransient(type);
+            Type[] serviceInterfaces =
+                ServiceInterface.GetServiceInterfaces(concreteClass);
+
+            RegisterClass.Register(
+                services,
+                concreteClass,
+                interfaceOwners,
+                serviceInterfaces
+            );
         }
 
         return services;
